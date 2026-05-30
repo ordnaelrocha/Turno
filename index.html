@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intervalo Noturno - Gestor de Intervalos</title>
+    <style>
+        :root {
+            /* Tema Padrão: Azul acinzentado pálido */
+            --bg-dark: #f0f4f8;          
+            --surface: #fdfaf6;          
+            --surface-variant: #e6eef5;  
+            --primary: #0f766e;
+            --primary-variant: #115e59;
+            --text-main: #2d3748;        
+            --text-muted: #64748b;
+            --error: #ef4444;
+            --border-radius: 16px;
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+            --warning: #f59e0b;
+            --success: #10b981;
+            --signature-bg: rgba(15, 118, 110, 0.05);
+            --signature-border: rgba(15, 118, 110, 0.15);
+        }
+
+        body.light-theme {
+            /* Tema 2: Cinza claro pálido */
+            --bg-dark: #f5f5f5;          
+            --surface: #ffffff;          
+            --surface-variant: #eceff1;  
+            --primary: #0f766e;
+            --primary-variant: #115e59;
+            --text-main: #334155;
+            --text-muted: #64748b;
+        }
+
+        body.sand-theme {
+            /* Tema 3: Areia Conforto (Tons pastéis e aconchegantes) */
+            --bg-dark: #f4f0e6;          /* Areia suave */
+            --surface: #fcfaf2;          /* Off-white pálido */
+            --surface-variant: #eae3d2;  /* Areia médio para inputs */
+            --primary: #78350f;          /* Marrom terracota escuro para contraste */
+            --primary-variant: #92400e;
+            --text-main: #451a03;        
+            --text-muted: #78350f;
+            --signature-bg: rgba(120, 53, 15, 0.05);
+            --signature-border: rgba(120, 53, 15, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main) !important;
+            padding: 20px 12px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: inherit;
+        }
+
+        header h1 span {
+            color: var(--primary);
+        }
+
+        .dev-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            background-color: var(--signature-bg);
+            border: 1px solid var(--signature-border);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .dev-badge strong {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .custom-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--surface);
+            padding: 10px 14px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .color-picker-wrapper input[type="color"] {
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: none;
+        }
+        .color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 50%;
+        }
+
+        .theme-toggle {
+            background-color: var(--surface-variant);
+            color: inherit;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card {
+            background-color: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: inherit;
+        }
+
+        .titulo-esquerda { display: flex; align-items: center; gap: 8px; }
+
+        .tag-lider {
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.04);
+            color: inherit;
+            padding: 2px 10px;
+            border-radius: 8px;
+            font-weight: 500;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        .tag-lider strong { color: var(--primary); font-weight: 700; }
+
+        .contador-equipe {
+            font-size: 0.9rem;
+            background-color: var(--surface-variant);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid rgba(15, 118, 110, 0.15);
+        }
+
+        .input-group { display: flex; gap: 10px; margin-bottom: 16px; }
+
+        input[type="text"], input[type="time"] {
+            flex: 1;
+            background-color: var(--surface-variant);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: inherit;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15); }
+
+        button { background-color: var(--primary); color: #ffffff; border: none; padding: 14px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; }
+        button:active { transform: scale(0.98); }
+
+        button.btn-danger { background-color: transparent; color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
+        .lista-equipe { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
+
+        .item-membro { display: flex; align-items: center; justify-content: space-between; background-color: var(--surface-variant); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.02); }
+        .item-membro.ausente { opacity: 0.45; }
+
+        .checkbox-group { display: flex; align-items: center; gap: 12px; cursor: pointer; width: 100%; font-weight: 500; }
+        input[type="checkbox"] { appearance: none; width: 22px; height: 22px; border: 2px solid rgba(0, 0, 0, 0.2); border-radius: 6px; outline: none; background-color: transparent; cursor: pointer; display: grid; place-content: center; }
+        input[type="checkbox"]:checked { background-color: var(--primary); border-color: var(--primary); }
+        input[type="checkbox"]:checked::before { content: "✓"; color: #ffffff; font-size: 0.85rem; font-weight: 900; }
+
+        .botoes-acoes { display: flex; gap: 6px; align-items: center; }
+        .btn-status { background-color: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.25); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
+        .btn-status.status-ausente { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: rgba(245, 158, 11, 0.25); }
+        .btn-status.status-ferias { background-color: rgba(239, 68, 68, 0.1); color: var(--error); border-color: rgba(239, 68, 68, 0.25); }
+        
+        /* Estilo da Tag de Alerta Inline de Repetição */
+        .alerta-janta-hoje { font-size: 0.7rem; color: #b45309; background-color: #fef3c7; border: 1px solid #fcd34d; padding: 4px 6px; border-radius: 6px; font-weight: 700; white-space: nowrap; margin-right: 4px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+        .input-label { display: flex; flex-direction: column; gap: 6px; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .historico-lista { display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
+        .item-historico { background-color: var(--surface-variant); padding: 16px; border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.01); position: relative; }
+        .item-historico .topo-hist { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .item-historico .data { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; background: rgba(0, 0, 0, 0.04); padding: 4px 8px; border-radius: 6px; }
+        .item-historico .duracao { color: var(--primary); font-weight: 700; font-size: 0.8rem; }
+        .item-historico .detalhes { font-size: 0.95rem; margin-bottom: 10px; color: inherit; }
+        .item-historico .detalhes .retorno-destaque { color: var(--primary); font-size: 1.1rem; font-weight: 700; }
+        .item-historico .status-pessoas { font-size: 0.85rem; border-top: 1px solid rgba(0, 0, 0, 0.06); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+
+        .sub-verde { color: var(--primary); font-weight: 600; }
+        .sub-vermelho { color: var(--text-muted); font-weight: 600; }
+        footer { text-align: center; margin-top: 10px; padding: 12px; }
+        footer p { font-size: 0.8rem; color: var(--text-muted); opacity: 0.6; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>Intervalo <span>Noturno</span></h1>
+        <div class="dev-badge">Desenvolvido por: <strong>Leandro Rocha</strong></div>
+        <p>Turno Prático • 00:00 às 07:30</p>
+        
+        <div class="custom-panel">
+            <div class="color-picker-wrapper">
+                <span>Fundo Pálido:</span>
+                <input type="color" id="picker-fundo" onchange="mudarCorFundo(this.value)">
+            </div>
+            <div class="color-picker-wrapper">
+                <span>Letras:</span>
+                <input type="color" id="picker-letras" onchange="mudarCorLetras(this.value)">
+            </div>
+            <button class="theme-toggle" onclick="alternarTema()" id="btn-tema">☀️ Mudar Tons</button>
+        </div>
+    </header>
+
+    <div class="card">
+        <h2>
+            <div class="titulo-esquerda">
+                Minha Equipe 
+                <span class="tag-lider">Líder: <strong>André</strong></span>
+            </div>
+            <span id="contador" class="contador-equipe">0</span>
+        </h2>
+        <div class="input-group">
+            <input type="text" id="nome-membro" placeholder="Nome do funcionário...">
+            <button onclick="adicionarMembro()">+</button>
+        </div>
+        <div id="lista-equipe" class="lista-equipe"></div>
+    </div>
+
+    <div class="card">
+        <h2>Registrar Saída</h2>
+        <div class="grid-inputs">
+            <div class="input-label">
+                Saída
+                <input type="time" id="hora-saida">
+            </div>
+            <div class="input-label">
+                Duração
+                <input type="time" id="duracao-intervalo" value="01:00">
+            </div>
+        </div>
+        <button style="width: 100%; background-image: linear-gradient(135deg, var(--primary), var(--primary-variant));" onclick="registrarIntervalo()">Calcular Retorno e Salvar</button>
+    </div>
+    <div class="card">
+        <h2>Histórico <button class="btn-danger" onclick="limparHistorico()">Limpar Tudo</button></h2>
+        <div id="historico-lista" class="historico-lista"></div>
+    </div>
+
+    <footer>
+        <p>Aplicativo feito por: <strong>Leandro Rocha</strong></p>
+    </footer>
+</div>
+
+<script>
+    let equipe = JSON.parse(localStorage.getItem('equipe_janta_v2')) || [];
+    let historico = JSON.parse(localStorage.getItem('historico_janta')) || [];
+    let temaAtual = localStorage.getItem('tema_app') || 'dark';
+    
+    function aplicarTemaVisual(tema) {
+        document.body.classList.remove('light-theme', 'sand-theme');
+        const btn = document.getElementById('btn-tema');
+        if (tema === 'light') { document.body.classList.add('light-theme'); btn.textContent = '🌙 Tons Claros'; }
+        else if (tema === 'sand') { document.body.classList.add('sand-theme'); btn.textContent = '🏖️ Areia Conforto'; }
+        else { btn.textContent = '☀️ Tons Padrão'; }
+    }
+    
+    aplicarTemaVisual(temaAtual);
+
+    if (localStorage.getItem('custom_bg')) {
+        const corBg = localStorage.getItem('custom_bg');
+        document.body.style.backgroundColor = corBg;
+        document.getElementById('picker-fundo').value = corBg;
+    } else {
+        document.getElementById('picker-fundo').value = temaAtual === 'light' ? '#f5f5f5' : (temaAtual === 'sand' ? '#f4f0e6' : '#f0f4f8');
+    }
+
+    if (localStorage.getItem('custom_text')) {
+        const corTexto = localStorage.getItem('custom_text');
+        document.body.style.setProperty('--text-main', corTexto);
+        document.body.style.color = corTexto;
+        document.getElementById('picker-letras').value = corTexto;
+    } else {
+        document.getElementById('picker-letras').value = temaAtual === 'light' ? '#334155' : (temaAtual === 'sand' ? '#451a03' : '#2d3748');
+    }
+
+    if(equipe.length > 0 && typeof equipe[0] === 'string') {
+        equipe = equipe.map(nome => ({ nome: nome, status: 'ativo' }));
+    }
+
+    function alternarTema() {
+        localStorage.removeItem('custom_bg'); localStorage.removeItem('custom_text');
+        document.body.style.backgroundColor = ''; document.body.style.color = ''; document.body.style.removeProperty('--text-main');
+        temaAtual = temaAtual === 'dark' ? 'light' : (temaAtual === 'light' ? 'sand' : 'dark');
+        localStorage.setItem('tema_app', temaAtual); aplicarTemaVisual(temaAtual);
+        document.getElementById('picker-fundo').value = temaAtual === 'light' ? '#f5f5f5' : (temaAtual === 'sand' ? '#f4f0e6' : '#f0f4f8');
+        document.getElementById('picker-letras').value = temaAtual === 'light' ? '#334155' : (temaAtual === 'sand' ? '#451a03' : '#2d3748');
+        renderizarEquipe(); renderizarHistorico();
+    }
+
+    function mudarCorFundo(cor) { document.body.style.backgroundColor = cor; localStorage.setItem('custom_bg', cor); }
+    function mudarCorLetras(cor) { document.body.style.color = cor; document.body.style.setProperty('--text-main', cor); localStorage.setItem('custom_text', cor); }
+
+    function ajustarHoraAtual() {
+        const agora = new Date();
+        document.getElementById('hora-saida').value = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function atualizarContador() { document.getElementById('contador').textContent = equipe.filter(m => m.status === 'ativo').length; }
+
+    function alternarStatus(index) {
+        const statusOrdem = ['ativo', 'ausente', 'ferias'];
+        equipe[index].status = statusOrdem[(statusOrdem.indexOf(equipe[index].status) + 1) % statusOrdem.length];
+        localStorage.setItem('equipe_janta_v2', JSON.stringify(equipe)); renderizarEquipe();
+    }
+
+    /* NOVA FUNÇÃO: Retorna a data correta do turno operacional (00:00 às 07:30) */
+    function obterDataTurnoOperacional() {
+        const agora = new Date();
+        const hora = agora.getHours();
+        const minuto = agora.getMinutes();
+        
+        // Se já passou da meia-noite mas ainda não deu 07:31, considera o dia civil ANTERIOR (onde o turno começou)
+        if (hora < 7 || (hora === 7 && minuto <= 30)) {
+            agora.setDate(agora.getDate() - 1);
+        }
+        return agora.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    }
+
+    function renderizarEquipe() {
+        const lista = document.getElementById('lista-equipe'); atualizarContador();
+        if (equipe.length === 0) {
+            lista.innerHTML = `<p style="color: var(--text-muted); text-align: center; font-size: 0.9rem; padding: 10px 0;">Sua lista de equipe está vazia.</p>`; return;
+        }
+
+        // Puxa a data inteligente baseada no turno prático de vocês
+        const dataDoTurno = obterDataTurnoOperacional();
+
+        lista.innerHTML = equipe.map((membro, index) => {
+            const isAusente = membro.status !== 'ativo';
+            let labelStatus = 'Ativo'; let classeStatus = '';
+            if(membro.status === 'ausente') { labelStatus = 'Ausente'; classeStatus = 'status-ausente'; }
+            if(membro.status === 'ferias') { labelStatus = 'Férias'; classeStatus = 'status-ferias'; }
+            
+            // O alerta não vai sumir à meia-noite, ele obedece a data de início do turno
+            const jaJantouNoTurno = historico.some(registro => registro.data === dataDoTurno && registro.foram.includes(membro.nome));
+            const tagAlerta = jaJantouNoTurno ? `<span class="alerta-janta-hoje">⚠️ JÁ JANTOU HOJE</span>` : '';
+
+            return `
+                <div class="item-membro ${isAusente ? 'ausente' : ''}">
+                    <label class="checkbox-group">
+                        <input type="checkbox" class="chk-membro" data-nome="${membro.nome}" ${isAusente ? 'disabled' : ''}>
+                        <span style="color: inherit;">${membro.nome}</span>
+                    </label>
+                    <div class="botoes-acoes">
+                        ${tagAlerta}
+                        <button class="btn-status ${classeStatus}" onclick="alternarStatus(${index})">${labelStatus}</button>
+                        <button class="btn-danger" style="padding: 4px 10px; font-size: 0.75rem;" onclick="removerMembro(${index})">X</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function adicionarMembro() {
+        const input = document.getElementById('nome-membro'); const nome = input.value.trim();
+        if (nome) {
+            if (equipe.some(membro => membro.nome.toLowerCase() === nome.toLowerCase())) {
+                alert(`⚠️ Atenção: "${nome}" já está na lista da equipe!`); input.value = ''; input.focus(); return;
+            }
+            equipe.push({ nome: nome, status: 'ativo' }); localStorage.setItem('equipe_janta_v2', JSON.stringify(equipe));
+            input.value = ''; renderizarEquipe();
+        }
+    }
+
+    function removerMembro(index) { equipe.splice(index, 1); localStorage.setItem('equipe_janta_v2', JSON.stringify(equipe)); renderizarEquipe(); }
+
+    function calcularRetorno(horaSaidaStr, duracaoStr) {
+        const [hSaida, mSaida] = horaSaidaStr.split(':').map(Number); const [hDuracao, mDuracao] = duracaoStr.split(':').map(Number);
+        let hRetorno = hSaida + hDuracao; let mRetorno = mSaida + mDuracao;
+        if (mRetorno >= 60) { hRetorno += Math.floor(mRetorno / 60); mRetorno = mRetorno % 60; }
+        if (hRetorno >= 24) { hRetorno = hRetorno % 24; }
+        return `${String(hRetorno).padStart(2, '0')}:${String(mRetorno).padStart(2, '0')}`;
+    }
+
+    function registrarIntervalo() {
+        const horaSaida = document.getElementById('hora-saida').value; const duracao = document.getElementById('duracao-intervalo').value;
+        if (!horaSaida || !duracao) { alert('Por favor, preencha o horário de saída.'); return; }
+        const checkboxes = document.querySelectorAll('.chk-membro');
+        let foramJantar = []; let ficaram = []; const nomesAtivos = equipe.filter(m => m.status === 'ativo').map(m => m.nome);
+        checkboxes.forEach(chk => {
+            const nome = chk.getAttribute('data-nome');
+            if (nomesAtivos.includes(nome)) { if (chk.checked) { foramJantar.push(nome); } else { ficaram.push(nome); } }
+        });
+        if (foramJantar.length === 0 && nomesAtivos.length > 0) { alert('Selecione os funcionários ativos.'); return; }
+        
+        // Salva o registro marcando o dia de início do turno para a coerência do histórico
+        const dataDoTurno = obterDataTurnoOperacional();
+        
+        const horaRetorno = calcularRetorno(horaSaida, duracao);
+        historico.unshift({ data: dataDoTurno, saida: horaSaida, retorno: horaRetorno, duracao: duracao, foram: foramJantar, ficaram: ficaram });
+        localStorage.setItem('historico_janta', JSON.stringify(historico));
+        checkboxes.forEach(chk => chk.checked = false); renderizarEquipe(); renderizarHistorico(); ajustarHoraAtual();
+    }
+
+    function excluirItemHistorico(index) {
+        if (confirm('Deseja excluir este registro do histórico?')) {
+            historico.splice(index, 1); localStorage.setItem('historico_janta', JSON.stringify(historico)); renderizarEquipe(); renderizarHistorico();
+        }
+    }
+
+    function renderizarHistorico() {
+        const lista = document.getElementById('historico-lista');
+        if (historico.length === 0) { lista.innerHTML = `<p style="color: var(--text-muted); text-align: center; font-size: 0.9rem; padding: 20px 0;">Nenhum registro.</p>`; return; }
+        lista.innerHTML = historico.map((item, index) => `
+            <div class="item-historico">
+                <div class="topo-hist">
+                    <span class="data">📅 ${item.data}</span> <span class="duracao">⏱️ ${item.duracao}</span>
+                    <button class="btn-danger" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 6px;" onclick="excluirItemHistorico(${index})">🗑️</button>
+                </div>
+                <div class="detalhes">Saída: <strong>${item.saida}</strong> • Retorno: <span class="retorno-destaque">${item.retorno}</span></div>
+                <div class="status-pessoas">
+                    <div><span class="sub-verde">✦ Foi(ram):</span> ${item.foram.join(', ') || 'Ninguém'}</div>
+                    <div><span class="sub-vermelho">⏳ Na operação:</span> ${item.ficaram.join(', ') || 'Ninguém'}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function limparHistorico() { if (confirm('Deseja realmente apagar todo o histórico?')) { historico = []; localStorage.removeItem('historico_janta'); renderizarEquipe(); renderizarHistorico(); } }
+    ajustarHoraAtual(); renderizarEquipe(); renderizarHistorico();
+</script>
+</body>
+</html>
